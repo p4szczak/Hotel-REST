@@ -60,9 +60,15 @@ class Client
      */
     private $reservation;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Transfer", mappedBy="client", orphanRemoval=true)
+     */
+    private $transfer;
+
     public function __construct()
     {
         $this->reservation = new ArrayCollection();
+        $this->transfer = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -167,6 +173,37 @@ class Client
             // set the owning side to null (unless already changed)
             if ($reservation->getClient() === $this) {
                 $reservation->setClient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transfer[]
+     */
+    public function getTransfer(): Collection
+    {
+        return $this->transfer;
+    }
+
+    public function addTransfer(Transfer $transfer): self
+    {
+        if (!$this->transfer->contains($transfer)) {
+            $this->transfer[] = $transfer;
+            $transfer->setClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransfer(Transfer $transfer): self
+    {
+        if ($this->transfer->contains($transfer)) {
+            $this->transfer->removeElement($transfer);
+            // set the owning side to null (unless already changed)
+            if ($transfer->getClient() === $this) {
+                $transfer->setClient(null);
             }
         }
 
