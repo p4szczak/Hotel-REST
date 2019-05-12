@@ -44,6 +44,8 @@ class ClientController extends AbstractController
         $client->setLastName($data['last_name']);
         $client->setPhone($data['phone']);
         $client->setEmail($data['email']);
+        $client->setCity($data['city']);
+        $client->setBirthDate($data['birth_date']);
 
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->persist($client);
@@ -74,6 +76,8 @@ class ClientController extends AbstractController
             "last_name" => $client->getLastName(),
             "phone" => $client->getPhone(),
             "email" => $client->getEmail(),
+            "city" => $client->getCity(),
+            "birth_date" => $client->getBirthDate()
         ];
 
         return new JsonResponse(json_encode($response));     
@@ -86,11 +90,17 @@ class ClientController extends AbstractController
      * @SWG\Tag(name="client")
      * @SWG\Response(response=200, description="successful operation")
      * 
-     *
      * 
+     * @SWG\Parameter(name="page", in="query", type="integer")
+     * @SWG\Parameter(name="pageSize", in="query", type="integer") 
+     *
+     * @param Request $request
      */
-     public function listClients(){
-        //TODO PAGES
+     public function listClients(Request $request){
+
+        $page =  $request->query->get('page');
+        $pageSize =  $request->query->get('pageSize');
+
         $clients = $this->getDoctrine()->getRepository(Client::class)->findAll();
         $arr = array();
         foreach ($clients as &$value) {
@@ -99,10 +109,12 @@ class ClientController extends AbstractController
                 "last_name" => $value->getLastName(),
                 "phone" => $value->getPhone(),
                 "email" => $value->getEmail(),
+                "city" => $value->getCity(),
+                "birth_date" => $value->getBirthDate()
             ];
             array_push($arr, $response);
         }
-        return new JsonResponse(json_encode($arr));   
+        return new JsonResponse(array_slice($arr, $page * $pageSize, $pageSize));   
      }
 
      /**
@@ -164,6 +176,8 @@ class ClientController extends AbstractController
         $client->setLastName($data['last_name']);
         $client->setPhone($data['phone']);
         $client->setEmail($data['email']);
+        $client->setCity($data['city']);
+        $client->setBirthDate($data['birth_date']);
         $entityManager->flush();
     
         // return $this->redirectToRoute('show_client', [

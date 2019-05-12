@@ -4,7 +4,7 @@ namespace App\Controller\API;
 
 
 use Symfony\Component\Routing\Annotation\Route;
-use App\Entity\Room;
+use App\Entity\Service;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Acme\FooBundle\Validation\Constraints\MyComplexConstraint;
@@ -15,40 +15,38 @@ use Nelmio\ApiDocBundle\Annotation\Security;
 use Swagger\Annotations as SWG;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
-class RoomController extends AbstractController
+class ServiceController extends AbstractController
 {
     /**
-     * @Route("/api/room", name="add_room", methods={"POST"})
+     * @Route("/api/service", name="add_service", methods={"POST"})
      * 
-     * @SWG\Tag(name="room")
+     * @SWG\Tag(name="service")
      * @SWG\Response(response=200, description="successful operation")
      * 
      * @SWG\Parameter(
      *      name="body",
      *      in="body",
      *      required=true,
-     *      @SWG\Schema(ref=@Model(type=Room::class)),
+     *      @SWG\Schema(ref=@Model(type=Service::class)),
      * )
      * 
      * @param Request $request
      * 
      */
-    public function addRoom(Request $request) {
+    public function addService(Request $request) {
         $data = json_decode($request->getContent(), true);
         if (!$request) {
             return $this->respondValidationError('Please provide a valid request!');
         }
 
-        $room = new Room();
-        $room->setRoomNumber($data['room_number']);
-        $room->setPlacesCount($data['places_count']);
-        $room->setCostPerDay($data['cost_per_day']);
-        $room->setType($data['type']);
-        $room->setIsAvaiable($data['is_avaiable']);
+        $service = new Service();
+        $service->setName($data['name']);
+        $service->setCost($data['cost']);
 
         $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($room);
+        $entityManager->persist($service);
         $entityManager->flush();
-        return new Response('Saved new room with id '.$room->getId());
+        return new Response('Saved new service with id '.$service->getId());
      }
-}
+
+    }
