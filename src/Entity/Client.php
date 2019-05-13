@@ -57,11 +57,13 @@ class Client
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Reservation", mappedBy="client", orphanRemoval=true)
+     * @SWG\Property(type="string", example="")
      */
     private $reservation;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Transfer", mappedBy="client", orphanRemoval=true)
+     * @SWG\Property(type="string", example="")
      */
     private $transfer;
 

@@ -51,6 +51,7 @@ class Room
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Reservation", mappedBy="Room", orphanRemoval=true)
+     * @SWG\Property(type="string", example="")
      */
     private $reservations;
 

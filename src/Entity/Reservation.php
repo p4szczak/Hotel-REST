@@ -52,11 +52,13 @@ class Reservation
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\Service", inversedBy="reservation")
+     * @SWG\Property(type="string", example="")
      */
     private $services;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Transfer", mappedBy="reservation", orphanRemoval=true)
+     * @SWG\Property(type="string", example="")
      */
     private $transfer;
 

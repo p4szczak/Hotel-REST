@@ -106,9 +106,6 @@ class TransferController extends AbstractController
      */
     public function listTransfers(Request $request){
 
-        $page =  $request->query->get('page');
-        $pageSize =  $request->query->get('pageSize');
-
         $transfers = $this->getDoctrine()->getRepository(Transfer::class)->findAll();
         $arr = array();
         foreach ($transfers as &$value) {
@@ -118,6 +115,6 @@ class TransferController extends AbstractController
             ];
             array_push($arr, $response);
         }
-        return new JsonResponse(array_slice($arr, $page * $pageSize, $pageSize));   
+        return new JsonResponse($arr);   
      }
 }

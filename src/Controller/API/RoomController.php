@@ -26,8 +26,6 @@ class RoomController extends AbstractController
      */
     public function listRooms(Request $request){
 
-        $page =  $request->query->get('page');
-        $pageSize =  $request->query->get('pageSize');
 
         $rooms = $this->getDoctrine()->getRepository(Room::class)->findAll();
         $arr = array();
@@ -41,7 +39,7 @@ class RoomController extends AbstractController
             ];
             array_push($arr, $response);
         }
-        return new JsonResponse(array_slice($arr, $page * $pageSize, $pageSize));   
+        return new JsonResponse($arr);   
      }
     
 
@@ -101,7 +99,7 @@ class RoomController extends AbstractController
                 'No room found for id '.$id
             );
         }
-    
+         
         $room->setRoomNumber($data['room_number']);
         $room->setPlacesCount($data['places_count']);
         $room->setCostPerDay($data['cost_per_day']);

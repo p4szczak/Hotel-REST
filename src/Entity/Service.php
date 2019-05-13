@@ -33,6 +33,7 @@ class Service
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\Reservation", mappedBy="services")
+     * @SWG\Property(type="string", example="")
      */
     private $reservation;
 
