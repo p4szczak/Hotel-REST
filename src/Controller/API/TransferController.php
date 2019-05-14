@@ -22,7 +22,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 class TransferController extends AbstractController
 {
     /**
-     * @Route("/api/transfer", name="add_client", methods={"POST"})
+     * @Route("/api/transfer", name="add_transfer", methods={"POST"})
      * 
      * @SWG\Tag(name="transfer")
      * @SWG\Response(response=200, description="successful operation")

@@ -95,11 +95,11 @@ class ReservationController extends AbstractController
             }
 
             //jezeli jest przed
-            if($start < $value->getStartDate() and $end <= $value->getEndDate()){
+            if($start < $value->getStartDate() and $end <= $value->getStartDate()){
                 $isBefore = true;
             }
             //jezeli jest po 
-            if($start >= $value->getStartDate() and $end > $value->getEndDate()){
+            if($start >= $value->getEndDate() and $end > $value->getEndDate()){
                 $isAfter = true;
             }
 

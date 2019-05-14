@@ -52,7 +52,7 @@ class RoomController extends AbstractController
      *  @param int $id
      * 
      */
-    public function showRoom(int $id){
+    public function showRoom(int $id, Request $request){
         $room = $this->getDoctrine()->getRepository(Room::class)->find($id);
 
         if (!$room) {
@@ -70,7 +70,7 @@ class RoomController extends AbstractController
         return new JsonResponse(json_encode($response));     
      }
 
-          /**
+    /**
      * @Route("/api/room/{id}", name="update_room", methods={"PUT"})
      * 
      * @SWG\Tag(name="room")

@@ -39,6 +39,20 @@ class ClientController extends AbstractController
             return $this->respondValidationError('Please provide a valid request!');
         }
 
+        $client = $this->getDoctrine()->getRepository(Clinet::class)->findOneBy([
+            "first_name" => $data['first_name'],
+            "last_name" => $data['last_name'],
+            "phone" => $data['phone'],
+            "email" => $data['email'],
+            "city" => $data['city'],
+            'birth_date' => $data['birth_date']
+        ]);
+
+        if($client){
+            //klient juz istnieje wiec ktos probuje drugi raz
+            return new JsonResponse($data, JsonResponse::HTTP_CONFLICT, ['content-type' => 'application/json']);
+        }
+
         $client = new Client();
         $client->setFirstName($data['first_name']);
         $client->setLastName($data['last_name']);
@@ -62,16 +76,16 @@ class ClientController extends AbstractController
      * @SWG\Response(response=200, description="successful operation")
      * 
      *  @param int $id
-     * 
+     *  @param Request $request
      */
-     public function showClient(int $id){
+     public function showClient(int $id, Request $request){
         $client = $this->getDoctrine()->getRepository(Client::class)->find($id);
 
         if (!$client) {
             throw $this->createNotFoundException('No client found for id '.$id);
         }
         
-        $response = [
+        $data = [
             "first_name" => $client->getFirstName(),
             "last_name" => $client->getLastName(),
             "phone" => $client->getPhone(),
@@ -80,7 +94,23 @@ class ClientController extends AbstractController
             "birth_date" => $client->getBirthDate()
         ];
 
-        return new JsonResponse(json_encode($response));     
+        $response = new Response();
+        $response->setContent(json_encode($data));
+        $response->headers->set('Content-Type', 'application/json');
+        $response->setEtag(md5( $data['first_name'].
+                                $data['last_name'].
+                                $data['phone'].
+                                $data['email'].
+                                $data['city'].
+                                $data['birth_date']
+                            ));
+        $response->setPublic();
+
+        if ($response->isNotModified($request)) {
+            return new Response('', Response::HTTP_NOT_MODIFIED, ['content-type' => 'text/html']);
+        }
+
+        return $response;     
      }
 
 
@@ -155,6 +185,15 @@ class ClientController extends AbstractController
      *      @SWG\Schema(ref=@Model(type=Client::class)),
      * )
      * 
+     * 
+     * @SWG\Parameter(
+     *      name="etag",
+     *      in="header",
+     *      required=true,
+     *      type="string",
+     * )
+     * 
+     * 
      * @param int $id
      * @param Request $request
      * 
@@ -170,6 +209,20 @@ class ClientController extends AbstractController
             throw $this->createNotFoundException(
                 'No client found for id '.$id
             );
+        }
+
+        $calculatedEtag = md5(  $client->getFirstName().
+                                $client->getLastName().
+                                $client->getPhone().
+                                $client->getEmail().
+                                $client->getCity().
+                                $client->getBirthDate()
+        );
+
+        $recvEtag = $request->headers->get('etag');
+
+        if ($calculatedEtag != $recvEtag) {
+            return new Response('', Response::HTTP_PRECONDITION_FAILED, ['content-type' => 'text/html']);
         }
     
         $client->setFirstName($data['first_name']);
