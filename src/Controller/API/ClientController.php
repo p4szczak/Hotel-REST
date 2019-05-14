@@ -41,12 +41,12 @@ class ClientController extends AbstractController
         }
 
         $client = $this->getDoctrine()->getRepository(Client::class)->findOneBy([
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
+            'firstName' => $data['first_name'],
+            'lastName' => $data['last_name'],
             'phone' => $data['phone'],
             'email' => $data['email'],
             'city' => $data['city'],
-            'birth_date' => $data['birth_date']
+            'birthDate' => $data['birth_date']
         ]);
 
         if($client){
