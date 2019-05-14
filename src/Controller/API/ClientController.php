@@ -22,7 +22,8 @@ class ClientController extends AbstractController
      * 
      * @SWG\Tag(name="client")
      * @SWG\Response(response=200, description="successful operation")
-     * 
+     * @SWG\Response(response=404, description="not found")
+     * @SWG\Response(response=409, description="POST method has been duplicated")
      * @SWG\Parameter(
      *      name="body",
      *      in="body",
@@ -39,12 +40,12 @@ class ClientController extends AbstractController
             return $this->respondValidationError('Please provide a valid request!');
         }
 
-        $client = $this->getDoctrine()->getRepository(Clinet::class)->findOneBy([
-            "first_name" => $data['first_name'],
-            "last_name" => $data['last_name'],
-            "phone" => $data['phone'],
-            "email" => $data['email'],
-            "city" => $data['city'],
+        $client = $this->getDoctrine()->getRepository(Client::class)->findOneBy([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'phone' => $data['phone'],
+            'email' => $data['email'],
+            'city' => $data['city'],
             'birth_date' => $data['birth_date']
         ]);
 
@@ -74,6 +75,8 @@ class ClientController extends AbstractController
      * 
      * @SWG\Tag(name="client")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
+     * @SWG\Response(response=304, description="not modified")
      * 
      *  @param int $id
      *  @param Request $request
@@ -82,7 +85,7 @@ class ClientController extends AbstractController
         $client = $this->getDoctrine()->getRepository(Client::class)->find($id);
 
         if (!$client) {
-            throw $this->createNotFoundException('No client found for id '.$id);
+            return new Response('Client not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
         
         $data = [
@@ -120,9 +123,8 @@ class ClientController extends AbstractController
      * @SWG\Tag(name="client")
      * @SWG\Response(response=200, description="successful operation")
      * 
-     * 
      * @SWG\Parameter(name="page", in="query", type="integer")
-     * @SWG\Parameter(name="pageSize", in="query", type="integer") 
+     * @SWG\Parameter(name="pageSize", in="query", type="integer")
      *
      * @param Request $request
      */
@@ -192,6 +194,7 @@ class ClientController extends AbstractController
      *      required=true,
      *      type="string",
      * )
+     * @SWG\Response(response=418, description="precondition failed")
      * 
      * 
      * @param int $id
@@ -233,10 +236,51 @@ class ClientController extends AbstractController
         $client->setBirthDate($data['birth_date']);
         $entityManager->flush();
     
-        // return $this->redirectToRoute('show_client', [
-        //     'id' => $client->getId()
-        // ]);
         return new Response("Client with id '.$id.' updated successfully!");
+    }
+
+
+    /**
+     * @Route("/api/client/{id}", name="patch_client", methods={"PATCH"})
+     * 
+     * @SWG\Tag(name="client")
+     * @SWG\Response(response=200, description="successful operation")
+     * 
+     * @SWG\Parameter(
+     *      name="body",
+     *      in="body",
+     *      required=true,
+     *      @SWG\Schema(ref=@Model(type=Client::class)),
+     * )
+     * 
+     * 
+     * 
+     * @param int $id
+     * @param Request $request
+     * 
+     */
+
+    public function patchClient(int $id, Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+        $entityManager = $this->getDoctrine()->getManager();
+        $client = $entityManager->getRepository(Client::class)->find($id);
+    
+        if (!$client) {
+            throw $this->createNotFoundException(
+                'No client found for id '.$id
+            );
+        }
+    
+        if(key_exists('first_name', $data)) $client->setFirstName($data['first_name']);
+        if(key_exists('last_name', $data)) $client->setLastName($data['last_name']);
+        if(key_exists('phone',$data)) $client->setPhone($data['phone']);
+        if(key_exists('email',$data)) $client->setEmail($data['email']);
+        if(key_exists('city',$data)) $client->setCity($data['city']);
+        if(key_exists('birth_date',$data)) $client->setBirthDate($data['birth_date']);
+        $entityManager->flush();
+    
+        return new Response("Client with id '.$id.' has been patched successfully!");
     }
      
 }

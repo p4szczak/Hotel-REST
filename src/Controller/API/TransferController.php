@@ -54,6 +54,12 @@ class TransferController extends AbstractController
             return $this->respondValidationError('Please provide a valid reservation!');
         }
 
+        $today = new \DateTime();
+
+        if ($reservation->getEndDate() <= $today){
+            return new Response("You cannot make transfer for archived reservations");
+        }
+
 
         $reservation->setClient($client);
 
@@ -92,7 +98,7 @@ class TransferController extends AbstractController
             "client" => $transfer->getClient()->getId()
         ];
 
-        return new JsonResponse(json_encode($response));     
+        return new JsonResponse($response);     
      }
 
 

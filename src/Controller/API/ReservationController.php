@@ -25,6 +25,8 @@ class ReservationController extends AbstractController
      * 
      * @SWG\Tag(name="reservation")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
+     * @SWG\Response(response=409, description="date conflict")
      * 
      * @SWG\Parameter(
      *      name="body",
@@ -44,21 +46,22 @@ class ReservationController extends AbstractController
 
         $client = $this->getDoctrine()->getRepository(Client::class)->find($data['client']);
         if (!$client) {
-            return $this->respondValidationError('Please provide a valid client!');
+            return new Response('Client not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
 
         $room = $this->getDoctrine()->getRepository(Room::class)->find($data['_room']);
 
         if (!$room) {
-            return $this->respondValidationError('Please provide a valid room!');
+            return new Response('Room not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
 
         $start = new \DateTime($data['start_date']);
         $end = new \DateTime($data['end_date']);
 
-        //TO_DO canAddReservation!
-        // if(canAddReservation())
-
+        if(!$this->canAddReservation($room, $start, $end)){
+            return new Response('Date is overlapping another one!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
+        }
+        
         $reservation = new Reservation();
         $reservation->setClient($client);
         $reservation->setRoom($room);
@@ -66,14 +69,12 @@ class ReservationController extends AbstractController
         $reservation->setEndDate($end);
 
         if($reservation->getEndDate() <= $reservation->getStartDate()){
-            return $this->respondValidationError('End date must be later than start date.. Please provide!');
+            return new Response('End date must be before start date!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
         }
 
         $interval = $reservation->getEndDate()->diff($reservation->getStartDate());
         $days = $interval->d;
-
         
-
         
         $reservation->setCost($room->getCostPerDay() * $days);
 
@@ -90,7 +91,7 @@ class ReservationController extends AbstractController
             $isBefore = false;
             $isAfter = false;
             //jezeli pokoj nie jest ten sam to zacznij ponownie
-            if($value->getRoomNumber() != $room->getRoomNumber()){
+            if($value->getRoom()->getRoomNumber() != $room->getRoomNumber()){
                 continue;
             }
 
@@ -103,7 +104,7 @@ class ReservationController extends AbstractController
                 $isAfter = true;
             }
 
-            if(!$isBefore and $isAfter){
+            if(!$isBefore and !$isAfter){
                 return false;
             }
             
@@ -118,6 +119,9 @@ class ReservationController extends AbstractController
      * 
      * @SWG\Tag(name="reservation")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
+     * @SWG\Response(response=409, description="date conflict")
+     * 
      * @SWG\Parameter(
      *      name="body",
      *      in="body",
@@ -133,11 +137,17 @@ class ReservationController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $service =$this->getDoctrine()->getRepository(Service::class)->find($data['sid']);
         if (!$service) {
-            throw $this->createNotFoundException('No service found for id '.$data['sid']);
+            return new Response('Service not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
         $reservation = $this->getDoctrine()->getRepository(Reservation::class)->find($rid);
         if (!$reservation) {
-            throw $this->createNotFoundException('No service found for id '.$rid);
+            return new Response('Reservation not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
+        }
+
+        $today = new \DateTime();
+
+        if ($reservation->getEndDate() <= $today){
+            return new Response('You cannot add services to archived reservation!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
         }
 
         $reservation->addService($service);
@@ -157,7 +167,8 @@ class ReservationController extends AbstractController
      * 
      * @SWG\Tag(name="reservation")
      * @SWG\Response(response=200, description="successful operation")
-     * 
+     * @SWG\Response(response=404, description="not found")
+     * @SWG\Response(response=409, description="date conflict") 
      *
      * @param int $rid
      * @param int $id
@@ -168,13 +179,19 @@ class ReservationController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
 
         if (!$reservation) {
-            throw $this->createNotFoundException('No reservation found for id '.$rid);
+            return new Response('Reservation not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
         
+        $today = new \DateTime();
+
+        if ($reservation->getEndDate() <= $today){
+            return new Response('You cannot delete services from archived reservation!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
+        }
+
         $service = $this->getDoctrine()->getRepository(Service::class)->find($id);
 
         if (!$service) {
-            throw $this->createNotFoundException('No service found for id '.$id);
+            return new Response('Service not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
 
         
@@ -189,12 +206,18 @@ class ReservationController extends AbstractController
      * 
      * @SWG\Tag(name="reservation")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
+     * 
      * @param int $rid
      * 
      */
     public function listServicesInReservation(int $rid){
 
         $reservation = $this->getDoctrine()->getRepository(Reservation::class)->find($rid);
+
+        if (!$reservation) {
+            return new Response('Reservation not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
+        }
         
         $arr = array();
         foreach ($reservation->getServices() as &$value) {
@@ -214,6 +237,7 @@ class ReservationController extends AbstractController
      * 
      * @SWG\Tag(name="reservation")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
      * @param Request $request
      */
     public function listReservations(Request $request){
@@ -238,6 +262,7 @@ class ReservationController extends AbstractController
      * 
      * @SWG\Tag(name="reservation")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
      * 
      *  @param int $id
      * 
@@ -246,7 +271,7 @@ class ReservationController extends AbstractController
         $reservation = $this->getDoctrine()->getRepository(Reservation::class)->find($id);
 
         if (!$reservation) {
-            throw $this->createNotFoundException('No reservation found for id '.$id);
+            return new Response('Reservation not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
         
         $response = [
@@ -257,7 +282,7 @@ class ReservationController extends AbstractController
             "cost" => $reservation->getCost(),
         ];
 
-        return new JsonResponse(json_encode($response));     
+        return new JsonResponse($response);     
      }
 
     /**
@@ -265,6 +290,8 @@ class ReservationController extends AbstractController
      * 
      * @SWG\Tag(name="reservation")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
+     * @SWG\Response(response=409, description="date conflict")
      * 
      *  @param int $id
      * 
@@ -276,17 +303,17 @@ class ReservationController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
 
         if (!$reservation) {
-            throw $this->createNotFoundException('No reservation found for id '.$id);
+            return new Response('Reservation not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
 
         $today = new \DateTime();
 
         if ($reservation->getEndDate() <= $today){
-            return new Response("You cannot delete archived reservations");
+            return new Response('You cannot delete archived reservation!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
         }
 
         if($reservation->getStartDate() <= $today and $reservation->getEndDate() > $today){
-            return new Response("You cannot delete began reservations");
+            return new Response('You cannot delete began reservations!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
         }
         
         $entityManager->remove($reservation);
@@ -294,4 +321,5 @@ class ReservationController extends AbstractController
 
         return new Response("Object with id: ".$id." has been removed");
      }
+
 }
