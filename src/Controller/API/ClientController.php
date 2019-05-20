@@ -282,5 +282,38 @@ class ClientController extends AbstractController
     
         return new Response("Client with id '.$id.' has been patched successfully!");
     }
+
+    /**
+     * @Route("/api/client/{cid}/reservation", name="list_reservations_of_client", methods={"GET"})
+     * 
+     * @SWG\Tag(name="client")
+     * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
+     * 
+     * @param int $cid
+     * 
+     */
+    public function listReservationsOfClient(int $cid){
+
+        $client = $this->getDoctrine()->getRepository(Client::class)->find($cid);
+
+        if (!$client) {
+            return new Response('Client not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
+        }
+        
+        $arr = array();
+        foreach ($client->getReservation() as &$value) {
+            $response = [
+                "id" => $value->getId(),
+                "_room" => $value->getRoom()->getId(),
+                "client" => $value->getClient()->getId(),
+                "start_date" => $value->getStartDate()->format('Y-m-d'),
+                "end_date" => $value->getEndDate()->format('Y-m-d'),
+                "cost" => $value->getCost()
+            ];
+            array_push($arr, $response);
+        }
+        return new JsonResponse($arr);   
+    }
      
 }

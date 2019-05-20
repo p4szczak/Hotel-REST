@@ -42,6 +42,7 @@ class ServiceController extends AbstractController
         $service = new Service();
         $service->setName($data['name']);
         $service->setCost($data['cost']);
+        $service->setIsAvailable($data['is_available']);
         
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -69,6 +70,7 @@ class ServiceController extends AbstractController
         $response = [
             "name" => $service->getName(),
             "cost" => $service->getCost(),
+            "is_available" => $service->getIsAvailable()
         ];
 
         return new JsonResponse(json_encode($response));     
@@ -90,6 +92,7 @@ class ServiceController extends AbstractController
             $response = [
                 "name" => $value->getName(),
                 "cost" => $value->getCost(),
+                "is_available" => $value->getIsAvailable(),
             ];
             array_push($arr, $response);
         }
@@ -153,6 +156,7 @@ class ServiceController extends AbstractController
     
         $service->setName($data['name']);
         $service->setCost($data['cost']);
+        $service->setIsAvailable($data['is_available']);
         $entityManager->flush();
     
         // return $this->redirectToRoute('show_service', [

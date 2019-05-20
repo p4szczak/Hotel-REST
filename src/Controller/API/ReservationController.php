@@ -139,10 +139,16 @@ class ReservationController extends AbstractController
         if (!$service) {
             return new Response('Service not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
+
+        if(!$service->getIsAvailable()){
+            return new Response('You cannot add unavailable servieces to reservation!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
+        }
         $reservation = $this->getDoctrine()->getRepository(Reservation::class)->find($rid);
         if (!$reservation) {
             return new Response('Reservation not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
+
+
 
         $today = new \DateTime();
 
@@ -224,6 +230,7 @@ class ReservationController extends AbstractController
             $response = [
                 "name" => $value->getName(),
                 "cost" => $value->getCost(),
+                "is_available" => $value->getIsAvailable()
             ];
             array_push($arr, $response);
         }

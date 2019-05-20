@@ -37,6 +37,12 @@ class Service
      */
     private $reservation;
 
+    /**
+     * @ORM\Column(type="boolean")
+     * @SWG\Property(type="boolean", example=1)
+     */
+    private $isAvailable;
+
     public function __construct()
     {
         $this->reservation = new ArrayCollection();
@@ -95,6 +101,18 @@ class Service
             $this->reservation->removeElement($reservation);
             $reservation->removeService($this);
         }
+
+        return $this;
+    }
+
+    public function getIsAvailable(): ?bool
+    {
+        return $this->isAvailable;
+    }
+
+    public function setIsAvailable(bool $isAvailable): self
+    {
+        $this->isAvailable = $isAvailable;
 
         return $this;
     }
