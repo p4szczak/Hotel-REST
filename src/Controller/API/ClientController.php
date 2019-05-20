@@ -167,6 +167,9 @@ class ClientController extends AbstractController
         if (!$client) {
             throw $this->createNotFoundException('No client found for id '.$id);
         }
+        if (!$client->getReservation()->isEmpty()){
+            return new Response('You cannot delete client with reservations!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
+        }
         
         $entityManager->remove($client);
         $entityManager->flush();
