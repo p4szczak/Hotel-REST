@@ -69,7 +69,7 @@ class ReservationController extends AbstractController
         $reservation->setEndDate($end);
 
         if($reservation->getEndDate() <= $reservation->getStartDate()){
-            return new Response('End date must be before start date!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
+            return new Response('End date must be after start date!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
         }
 
         $interval = $reservation->getEndDate()->diff($reservation->getStartDate());
