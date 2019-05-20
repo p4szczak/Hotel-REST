@@ -45,19 +45,19 @@ class TransferController extends AbstractController
 
         $client = $this->getDoctrine()->getRepository(Client::class)->find($data['client']);
         if (!$client) {
-            return $this->respondValidationError('Please provide a valid client!');
+            return new Response('Client not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
 
         $reservation = $this->getDoctrine()->getRepository(Reservation::class)->find($data['reservation']);
 
         if (!$reservation) {
-            return $this->respondValidationError('Please provide a valid reservation!');
+            return new Response('Reservation not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
 
         $today = new \DateTime();
 
         if ($reservation->getEndDate() <= $today){
-            return new Response("You cannot make transfer for archived reservations");
+            return new Response("You cannot make transfer for archived reservations", Response::HTTP_CONFLICT, ['content-type' => 'text/html']); 
         }
 
 

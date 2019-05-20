@@ -199,6 +199,7 @@ class ReservationController extends AbstractController
         if (!$service) {
             return new Response('Service not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
+        $reservation->setCost($reservation->getCost() - $service->getCost());
 
         
         $reservation->removeService($service);
@@ -256,12 +257,12 @@ class ReservationController extends AbstractController
                 "_room" => $value->getRoom()->getId(),
                 "client" => $value->getClient()->getId(),
                 "start_date" => $value->getStartDate()->format('Y-m-d'),
-                "end_date" => $value->getEndDate(),
+                "end_date" => $value->getEndDate()->format('Y-m-d'),
                 "cost" => $value->getCost(),
             ];
             array_push($arr, $response);
         }
-        return new JsonResponse(array_slice($arr, $page * $pageSize, $pageSize));   
+        return new JsonResponse($arr);   
      }
 
      /**
@@ -285,7 +286,7 @@ class ReservationController extends AbstractController
             "_room" => $reservation->getRoom()->getId(),
             "client" => $reservation->getClient()->getId(),
             "start_date" => $reservation->getStartDate()->format('Y-m-d'),
-            "end_date" => $reservation->getEndDate(),
+            "end_date" => $reservation->getEndDate()->format('Y-m-d'),
             "cost" => $reservation->getCost(),
         ];
 
