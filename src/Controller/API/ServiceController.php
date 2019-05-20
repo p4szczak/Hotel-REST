@@ -100,31 +100,6 @@ class ServiceController extends AbstractController
      }
 
      /**
-     * @Route("/api/service/{id}", name="delete_service", methods={"DELETE"})
-     * 
-     * @SWG\Tag(name="service")
-     * @SWG\Response(response=200, description="successful operation")
-     * 
-     *  @param int $id
-     * 
-     */
-
-     public function deleteService(int $id){
-
-        $service = $this->getDoctrine()->getRepository(Service::class)->find($id);
-        $entityManager = $this->getDoctrine()->getManager();
-
-        if (!$service) {
-            throw $this->createNotFoundException('No service found for id '.$id);
-        }
-        
-        $entityManager->remove($service);
-        $entityManager->flush();
-
-        return new Response("Object with id: ".$id." has been removed");
-     }
-
-     /**
      * @Route("/api/service/{id}", name="update_service", methods={"PUT"})
      * 
      * @SWG\Tag(name="service")

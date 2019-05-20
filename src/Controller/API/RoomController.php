@@ -43,6 +43,32 @@ class RoomController extends AbstractController
      }
     
 
+     /**
+     * @Route("/api/room/available", name="list_available_rooms", methods={"GET"})
+     * 
+     * @SWG\Tag(name="room")
+     * @SWG\Response(response=200, description="successful operation")
+     * @param Request $request
+     */
+    public function listAvaiableRooms(Request $request){
+
+
+        $rooms = $this->getDoctrine()->getRepository(Room::class)->findAll();
+        $arr = array();
+        foreach ($rooms as &$value) {
+            if(!$value->getIsAvaiable()) continue;
+            $response = [
+                "room_number" => $value->getRoomNumber(),
+                "places_count" => $value->getPlacesCount(),
+                "cost_per_day" => $value->getCostPerDay(),
+                "type" => $value->getType(),
+                "is_avaiable" => $value->getIsAvaiable(),
+            ];
+            array_push($arr, $response);
+        }
+        return new JsonResponse($arr);   
+     }
+
          /**
      * @Route("/api/room/{id}", name="show_room", methods={"GET"})
      * 
