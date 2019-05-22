@@ -156,10 +156,16 @@ class ReservationController extends AbstractController
             return new Response('You cannot add services to archived reservation!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
         }
 
+        if ($reservation->getServices()->contains($service)){
+            return new Response('You cannot add this same service twice!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);    
+        }
         $reservation->addService($service);
 
+        
+        $interval = $reservation->getEndDate()->diff($reservation->getStartDate());
         $oldCost = $reservation->getCost();
-        $reservation->setCost($oldCost + $service->getCost());
+        $extraCost = $service->getCost() * $reservation->getRoom()->getPlacesCount() * $interval->d;
+        $reservation->setCost($oldCost + $extraCost);
 
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->persist($reservation);
@@ -190,7 +196,7 @@ class ReservationController extends AbstractController
         
         $today = new \DateTime();
 
-        if ($reservation->getEndDate() <= $today){
+        if ($reservation->getStartDate() <= $today){
             return new Response('You cannot delete services from archived reservation!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
         }
 
@@ -199,7 +205,11 @@ class ReservationController extends AbstractController
         if (!$service) {
             return new Response('Service not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
-        $reservation->setCost($reservation->getCost() - $service->getCost());
+
+        $interval = $reservation->getEndDate()->diff($reservation->getStartDate());
+        $oldCost = $reservation->getCost();
+        $extraCost = $service->getCost() * $reservation->getRoom()->getPlacesCount() * $interval->d;
+        $reservation->setCost($oldCost - $extraCost);
 
         
         $reservation->removeService($service);
