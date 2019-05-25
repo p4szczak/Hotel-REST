@@ -154,6 +154,8 @@ class ClientController extends AbstractController
      * 
      * @SWG\Tag(name="client")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=409, description="non-empty reservations conflict") 
+     * @SWG\Response(response=404, description="not found")
      * 
      *  @param int $id
      * 
@@ -165,7 +167,7 @@ class ClientController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
 
         if (!$client) {
-            throw $this->createNotFoundException('No client found for id '.$id);
+            return new Response('Client not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
         if (!$client->getReservation()->isEmpty()){
             return new Response('You cannot delete client with reservations!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
@@ -182,6 +184,8 @@ class ClientController extends AbstractController
      * 
      * @SWG\Tag(name="client")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=418, description="precondition failed") 
+     * @SWG\Response(response=404, description="not found")
      * 
      * @SWG\Parameter(
      *      name="body",
@@ -197,8 +201,6 @@ class ClientController extends AbstractController
      *      required=true,
      *      type="string",
      * )
-     * @SWG\Response(response=418, description="precondition failed")
-     * 
      * 
      * @param int $id
      * @param Request $request
@@ -212,9 +214,7 @@ class ClientController extends AbstractController
         $client = $entityManager->getRepository(Client::class)->find($id);
     
         if (!$client) {
-            throw $this->createNotFoundException(
-                'No client found for id '.$id
-            );
+            return new Response('Client not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
 
         $calculatedEtag = md5(  $client->getFirstName().
@@ -248,6 +248,7 @@ class ClientController extends AbstractController
      * 
      * @SWG\Tag(name="client")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
      * 
      * @SWG\Parameter(
      *      name="body",
@@ -255,8 +256,6 @@ class ClientController extends AbstractController
      *      required=true,
      *      @SWG\Schema(ref=@Model(type=Client::class)),
      * )
-     * 
-     * 
      * 
      * @param int $id
      * @param Request $request
@@ -270,9 +269,7 @@ class ClientController extends AbstractController
         $client = $entityManager->getRepository(Client::class)->find($id);
     
         if (!$client) {
-            throw $this->createNotFoundException(
-                'No client found for id '.$id
-            );
+                return new Response('Client not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
     
         if(key_exists('first_name', $data)) $client->setFirstName($data['first_name']);

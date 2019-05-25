@@ -50,6 +50,7 @@ class RoomController extends AbstractController
      * @SWG\Tag(name="room")
      * @SWG\Response(response=200, description="successful operation")
      * @SWG\Response(response=409, description="date conflict")
+     * @SWG\Response(response=404, description="not found")
      * 
      * @param Request $request
      * @SWG\Parameter(name="startDate", in="query", type="string")
@@ -112,6 +113,7 @@ class RoomController extends AbstractController
      * 
      * @SWG\Tag(name="room")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
      * 
      *  @param int $id
      * 
@@ -120,7 +122,7 @@ class RoomController extends AbstractController
         $room = $this->getDoctrine()->getRepository(Room::class)->find($id);
 
         if (!$room) {
-            throw $this->createNotFoundException('No room found for id '.$id);
+            return new Response('Room not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
         
         $response = [
@@ -139,6 +141,7 @@ class RoomController extends AbstractController
      * 
      * @SWG\Tag(name="room")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
      * 
      * @SWG\Parameter(
      *      name="body",
@@ -159,9 +162,7 @@ class RoomController extends AbstractController
         $room = $entityManager->getRepository(Room::class)->find($id);
     
         if (!$room) {
-            throw $this->createNotFoundException(
-                'No room found for id '.$id
-            );
+            return new Response('Room not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
          
         $room->setRoomNumber($data['room_number']);

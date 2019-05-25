@@ -56,7 +56,7 @@ class ServiceController extends AbstractController
      * 
      * @SWG\Tag(name="service")
      * @SWG\Response(response=200, description="successful operation")
-     * 
+     * @SWG\Response(response=404, description="not found")
      *  @param int $id
      * 
      */
@@ -64,7 +64,7 @@ class ServiceController extends AbstractController
         $service = $this->getDoctrine()->getRepository(Service::class)->find($id);
 
         if (!$service) {
-            throw $this->createNotFoundException('No service found for id '.$id);
+            return new Response('Service not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
         
         $response = [
@@ -104,6 +104,7 @@ class ServiceController extends AbstractController
      * 
      * @SWG\Tag(name="service")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
      * 
      * @SWG\Parameter(
      *      name="body",
@@ -124,19 +125,14 @@ class ServiceController extends AbstractController
         $service = $entityManager->getRepository(Service::class)->find($id);
     
         if (!$service) {
-            throw $this->createNotFoundException(
-                'No service found for id '.$id
-            );
+            return new Response('Service not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
     
         $service->setName($data['name']);
         $service->setCost($data['cost']);
         $service->setIsAvailable($data['is_available']);
         $entityManager->flush();
-    
-        // return $this->redirectToRoute('show_service', [
-        //     'id' => $service->getId()
-        // ]);
+
         return new Response("Service with id '.$id.' updated successfully!");
     }
 

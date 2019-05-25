@@ -55,6 +55,9 @@ class ReservationController extends AbstractController
             return new Response('Room not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
 
+        if(!$room->getIsAvaiable()){
+            return new Response('Room is unavailable!', Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
+        }
         $start = new \DateTime($data['start_date']);
         $end = new \DateTime($data['end_date']);
 
@@ -91,7 +94,7 @@ class ReservationController extends AbstractController
             $isBefore = false;
             $isAfter = false;
             //jezeli pokoj nie jest ten sam to zacznij ponownie
-            if($value->getRoom()->getRoomNumber() != $room->getRoomNumber()){
+            if($value->getRoom()->getId() != $room->getId()){
                 continue;
             }
 

@@ -26,6 +26,8 @@ class TransferController extends AbstractController
      * 
      * @SWG\Tag(name="transfer")
      * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=404, description="not found")
+     * @SWG\Response(response=409, description="date conflict")
      * 
      * @SWG\Parameter(
      *      name="body",
@@ -82,7 +84,7 @@ class TransferController extends AbstractController
      * 
      * @SWG\Tag(name="transfer")
      * @SWG\Response(response=200, description="successful operation")
-     * 
+     * @SWG\Response(response=404, description="not found")
      *  @param int $id
      * 
      */
@@ -90,7 +92,7 @@ class TransferController extends AbstractController
         $transfer = $this->getDoctrine()->getRepository(Transfer::class)->find($id);
 
         if (!$transfer) {
-            throw $this->createNotFoundException('No reservation found for id '.$id);
+            return new Response('Transfer not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
         
         $response = [
