@@ -208,6 +208,7 @@ class ReservationController extends AbstractController
         if (!$service) {
             return new Response('Service not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
         }
+        if(!$reservation->getServices()->contains($service)) return new Response('You cannot remove service from reservation if has not added before',  Response::HTTP_CONFLICT, ['content-type' => 'text/html']);
 
         $interval = $reservation->getEndDate()->diff($reservation->getStartDate());
         $oldCost = $reservation->getCost();
